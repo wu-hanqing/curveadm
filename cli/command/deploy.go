@@ -107,10 +107,10 @@ var (
 )
 
 type deployOptions struct {
-	skip     []string
-	insecure bool
-	diskType string
-	poolset  string
+	skip            []string
+	insecure        bool
+	poolset         string
+	poolsetDiskType string
 }
 
 func checkDeployOptions(options deployOptions) error {
@@ -120,10 +120,6 @@ func checkDeployOptions(options deployOptions) error {
 			return errno.ERR_UNSUPPORT_SKIPPED_SERVICE_ROLE.
 				F("skip role: %s", role)
 		}
-	}
-	if !(options.diskType == "ssd" || options.diskType == "hdd" || options.diskType == "nvme") {
-		return errno.ERR_INVALID_DISK_TYPE.
-			F("invalid disk type: %s", options.diskType)
 	}
 	return nil
 }
@@ -147,10 +143,8 @@ func NewDeployCommand(curveadm *cli.CurveAdm) *cobra.Command {
 	flags := cmd.Flags()
 	flags.StringSliceVar(&options.skip, "skip", []string{}, "Specify skipped service roles")
 	flags.BoolVarP(&options.insecure, "insecure", "k", false, "Deploy without precheck")
-	flags.StringVar(&options.poolset, "poolset", "", "poolset name")
-	cmd.MarkFlagRequired("poolset")
-	flags.StringVar(&options.diskType, "diskType", "ssd", "Specify the disk type of physical pool")
-	cmd.MarkFlagRequired("diskType")
+	flags.StringVar(&options.poolset, "poolset", "default", "poolset name")
+	flags.StringVar(&options.poolsetDiskType, "poolset-disktype", "ssd", "Specify the disk type of physical pool")
 	return cmd
 }
 
@@ -218,8 +212,8 @@ func genDeployPlaybook(curveadm *cli.CurveAdm,
 		steps = CURVEBS_DEPLOY_STEPS
 	}
 	steps = skipDeploySteps(steps, options)
-	diskType := options.diskType
 	poolset := options.poolset
+	diskType := options.poolsetDiskType
 
 	pb := playbook.NewPlaybook(curveadm)
 	for _, step := range steps {
@@ -239,8 +233,8 @@ func genDeployPlaybook(curveadm *cli.CurveAdm,
 		options := map[string]interface{}{}
 		if step == CREATE_PHYSICAL_POOL {
 			options[comm.KEY_CREATE_POOL_TYPE] = comm.POOL_TYPE_PHYSICAL
-			options[comm.SPECIFY_DISK_TYPE] = diskType
 			options[comm.POOLSET] = poolset
+			options[comm.POOLSET_DISK_TYPE] = diskType
 		} else if step == CREATE_LOGICAL_POOL {
 			options[comm.KEY_CREATE_POOL_TYPE] = comm.POOL_TYPE_LOGICAL
 		}

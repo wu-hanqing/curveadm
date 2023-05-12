@@ -92,8 +92,8 @@ func checkContainerExist(name string, out *string) step.LambdaType {
 	}
 }
 
-func prepare(dcs []*topology.DeployConfig, poolsetName, diskType string) (string, error) {
-	pool, err := configure.GenerateDefaultClusterPool(dcs, poolsetName, diskType)
+func prepare(dcs []*topology.DeployConfig, poolset, diskType string) (string, error) {
+	pool, err := configure.GenerateDefaultClusterPool(dcs, poolset, diskType)
 	if err != nil {
 		return "", err
 	}
@@ -107,14 +107,14 @@ func NewInitPlaygroundTask(curveadm *cli.CurveAdm, cfg *configure.PlaygroundConf
 	name := cfg.GetName()
 	subname := fmt.Sprintf("kind=%s name=%s", kind, name)
 	t := task.NewTask("Init Playground", subname, nil)
-	disktype := curveadm.MemStorage().Get(comm.SPECIFY_DISK_TYPE).(string)
-	poolsetName := curveadm.MemStorage().Get(comm.POOLSET).(string)
+	poolset := curveadm.MemStorage().Get(comm.POOLSET).(string)
+	poolsetDisktype := curveadm.MemStorage().Get(comm.POOLSET_DISK_TYPE).(string)
 
 	// add step to task
 	var containerId string
 	layout := topology.GetCurveBSProjectLayout()
 	poolJSONPath := path.Join(layout.ToolsConfDir, "topology.json")
-	clusterPoolJson, err := prepare(cfg.GetDeployConfigs(), poolsetName, disktype)
+	clusterPoolJson, err := prepare(cfg.GetDeployConfigs(), poolset, poolsetDisktype)
 	if err != nil {
 		return nil, err
 	}
