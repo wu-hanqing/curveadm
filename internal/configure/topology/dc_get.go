@@ -51,6 +51,7 @@ const (
 	LAYOUT_PFS_BINARY_PATH                  = "/usr/local/curvestore/bin/pfs"
 	LAYOUT_PFSD_BINARY_PATH                 = "/usr/local/curvestore/pfsd/bin/pfsdaemon"
 	LAYOUT_SPDK_SETUP_SCRIPT_PATH           = "/usr/local/spdk/scripts/setup.sh"
+	LAYOUT_UCX_CONF_PATH                    = "/usr/local/ucx/etc/ucx/ucx.conf"
 	LAYOUT_CORE_SYSTEM_DIR                  = "/core"
 
 	BINARY_CURVEBS_TOOL        = "curvebs-tool" // FIXME
@@ -259,6 +260,9 @@ type (
 		SpdkSetupScriptPath      string // /usr/local/spdk/scripts/setup.sh  // FIXME: move to /curvebs/tools
 		SpdkFormatStatusFilePath string // /curvebs/chunkserver/data/.curveadm_format_status
 
+		// rdma only
+		UcxConfPath string // /usr/local/ucx/etc/ucx/ucx.conf
+
 		// core
 		CoreSystemDir string
 	}
@@ -333,7 +337,8 @@ func (dc *DeployConfig) GetProjectLayout() Layout {
 		SpdkFormatBinaryPath:     path.Join(toolsBinDir, BINARY_SPDK_CURVEBS_FORMAT),
 		SpdkSetupScriptPath:      LAYOUT_SPDK_SETUP_SCRIPT_PATH,
 		SpdkFormatStatusFilePath: path.Join(chunkserverDataDir, FORMAT_STATUS_FILE),
-
+		// rdma only
+		UcxConfPath: LAYOUT_UCX_CONF_PATH,
 		// core
 		CoreSystemDir: LAYOUT_CORE_SYSTEM_DIR,
 	}

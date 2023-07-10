@@ -13,6 +13,8 @@ g_pfs="{{.pfs}}"
 g_curve_format="{{.spdk_curve_format}}"
 g_percent="{{.percent}}"
 g_status_file="{{.status_file}}"
+g_only_binding="{{.only_binding}}"
+g_reset="{{.reset}}"
 
 ############################ FUNCTIONS
 msg() {
@@ -58,7 +60,31 @@ format() {
      fi
 }
 
+binding() {
+    g_controller=$("${g_setup_script}" status 2>&1 | grep "${g_device##*/}" | awk '{ print $2}')
+    g_namespace="${g_controller}n1"
+    if [ -z "${g_controller}" ]; then
+        die "${g_device} controller not found\n"
+    fi
+
+    setup
+}
+
+reset_all() {
+    "${g_setup_script}" reset
+}
+
 main() {
+    if [ "${g_only_binding}" == "true" ]; then
+        binding
+        exit
+    fi
+
+    if [ "${g_reset}" == "true" ]; then
+        reset_all
+        exit
+    fi
+
     reset
     setup
     mkfs

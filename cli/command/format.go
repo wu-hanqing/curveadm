@@ -57,10 +57,12 @@ var (
 )
 
 type formatOptions struct {
-	filename   string
-	showStatus bool
-	stopFormat bool
-	spdk       bool
+	filename    string
+	showStatus  bool
+	stopFormat  bool
+	spdk        bool
+	onlyBinding bool
+	reset       bool
 }
 
 func NewFormatCommand(curveadm *cli.CurveAdm) *cobra.Command {
@@ -80,6 +82,8 @@ func NewFormatCommand(curveadm *cli.CurveAdm) *cobra.Command {
 	flags := cmd.Flags()
 	flags.StringVarP(&options.filename, "formatting", "f", "format.yaml", "Specify the configure file for formatting chunkfile pool")
 	flags.BoolVar(&options.spdk, "spdk", false, "Format chunkfile pool by SPDK")
+	flags.BoolVar(&options.onlyBinding, "only-binding", false, "Only binding NVMe devices")
+	flags.BoolVar(&options.reset, "reset", false, "Reset NVMe devices")
 	flags.BoolVar(&options.showStatus, "status", false, "Show formatting status")
 	flags.BoolVar(&options.stopFormat, "stop", false, "Stop formatting progress")
 
@@ -110,7 +114,9 @@ func genFormatPlaybook(curveadm *cli.CurveAdm,
 			Type:    step,
 			Configs: fcs,
 			Options: map[string]interface{}{
-				comm.KEY_FORMAT_BY_SPDK: options.spdk,
+				comm.KEY_FORMAT_BY_SPDK:    options.spdk,
+				comm.KEY_SPDK_ONLY_BINDING: options.onlyBinding,
+				comm.KEY_SPDK_RESET:        options.reset,
 			},
 			ExecOptions: playbook.ExecOptions{
 				SilentSubBar: options.showStatus,

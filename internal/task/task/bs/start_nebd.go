@@ -213,6 +213,21 @@ func NewStartNEBDServiceTask(curveadm *cli.CurveAdm, cc *configure.ClientConfig)
 			ExecOptions:       curveadm.ExecOptions(),
 		})
 	}
+
+	// copy ucx conf from local to container
+	var content string
+	t.AddStep(&step.ReadFile{
+		HostSrcPath: "./ucx.conf",
+		Content:     &content,
+		ExecOptions: curveadm.ExecOptions(),
+	})
+	t.AddStep(&step.InstallFile{
+		ContainerId:       &containerId,
+		ContainerDestPath: "/usr/local/ucx/etc/ucx/ucx.conf",
+		Content:           &content,
+		ExecOptions:       curveadm.ExecOptions(),
+	})
+
 	t.AddStep(&step.StartContainer{
 		ContainerId: &containerId,
 		Out:         &out,

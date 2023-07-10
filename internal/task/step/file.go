@@ -90,7 +90,12 @@ func (s *ReadFile) Execute(ctx *context.Context) error {
 	// remotePath
 	remotePath := s.HostSrcPath
 	if len(s.HostSrcPath) > 0 {
-		// do nothing
+		data, err := utils.ReadFile(s.HostSrcPath)
+		if err != nil {
+			return errno.ERR_READ_FILE_FAILED.E(err)
+		}
+		*s.Content = data
+		return nil
 	} else {
 		remotePath = utils.RandFilename(TEMP_DIR)
 		// defer ctx.Module().Shell().Remove(remotePath).Execute(module.ExecOptions{})

@@ -41,6 +41,8 @@ const (
 	ETCD_CONFIG_DELIMITER    = ": "
 
 	CURVE_CRONTAB_FILE = "/tmp/curve_crontab"
+
+	LOCAL_UCX_CONF = "./ucx.conf"
 )
 
 func newMutate(dc *topology.DeployConfig, delimiter string, forceRender bool) step.Mutate {
@@ -156,6 +158,20 @@ func NewSyncConfigTask(curveadm *cli.CurveAdm, dc *topology.DeployConfig) (*task
 		ContainerId:       &containerId,
 		ContainerDestPath: CURVE_CRONTAB_FILE,
 		Content:           &crontab,
+		ExecOptions:       curveadm.ExecOptions(),
+	})
+
+	// copy ucx conf from local to container
+	var ucxConf string
+	t.AddStep(&step.ReadFile{
+		HostSrcPath: LOCAL_UCX_CONF,
+		Content:     &ucxConf,
+		ExecOptions: curveadm.ExecOptions(),
+	})
+	t.AddStep(&step.InstallFile{
+		ContainerId:       &containerId,
+		ContainerDestPath: layout.UcxConfPath,
+		Content:           &ucxConf,
 		ExecOptions:       curveadm.ExecOptions(),
 	})
 

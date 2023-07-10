@@ -170,7 +170,7 @@ func device2ContainerName(device string) string {
 	return fmt.Sprintf("curvebs-format-%s", utils.MD5Sum(device))
 }
 
-func genFormatScript(fc *configure.FormatConfig, spdk bool) (string, error) {
+func genFormatScript(fc *configure.FormatConfig, spdk, onlyBinding, reset bool) (string, error) {
 	device := fc.GetDevice()
 	percent := fc.GetFormatPercent()
 	layout := topology.GetCurveBSProjectLayout()
@@ -188,6 +188,8 @@ func genFormatScript(fc *configure.FormatConfig, spdk bool) (string, error) {
 		"pfs":               layout.PfsBinaryPath,
 		"spdk_curve_format": layout.SpdkFormatBinaryPath,
 		"status_file":       layout.SpdkFormatStatusFilePath,
+		"only_binding":      onlyBinding,
+		"reset":             reset,
 	})
 }
 
@@ -240,13 +242,17 @@ func NewFormatChunkfilePoolTask(curveadm *cli.CurveAdm, fc *configure.FormatConf
 	containerName := device2ContainerName(device)
 	layout := topology.GetCurveBSProjectLayout()
 	spdk := curveadm.MemStorage().GetBool(comm.KEY_FORMAT_BY_SPDK)
+	onlyBinding := curveadm.MemStorage().GetBool(comm.KEY_SPDK_ONLY_BINDING)
+	reset := curveadm.MemStorage().GetBool(comm.KEY_SPDK_RESET)
 	formatScriptPath := path.Join(layout.ToolsBinDir, "format.sh")
-	formatScript, err := genFormatScript(fc, spdk)
+	formatScript, err := genFormatScript(fc, spdk, onlyBinding, reset)
 	if err != nil {
 		return nil, err
 	}
 
 	log.Error("spdk", log.Field("spdk", spdk))
+	log.Error("only binding", log.Field("only binding", onlyBinding))
+	log.Error("reset", log.Field("reset", reset))
 	log.Error("format script", log.Field("content", formatScript))
 
 	// 1: skip if formating container exist
